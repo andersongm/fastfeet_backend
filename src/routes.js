@@ -1,16 +1,17 @@
-const express = require('express');
-const routes = express.Router();
+import { Router } from 'express';
 
+import UserController from './app/controllers/UserController';
+import SessionController from './app/controllers/SessionController';
+import RecipientController from './app/controllers/RecipientController';
+import authMiddleware from './app/middlewares/auth';
 
-// Import Controllers
-const MainController = require('./controllers/MainController');
+const routes = new Router();
 
-// Define your routes into project
-// routes.get('/', (req,res) => {
-//     res.send('Start Page by Routes');
-// })
+routes.post('/sessions', SessionController.store);
+routes.post('/users', UserController.store);
 
-// Route with Controller
-routes.get('/', MainController.index);
+routes.use(authMiddleware);
 
-module.exports = routes;
+routes.post('/recipients', RecipientController.store);
+
+export default routes;
