@@ -64,6 +64,7 @@ routes.delete('/deliverymans/:id', DeliverymanController.delete);
 routes.post('/deliveries', DeliveryController.store);
 routes.get('/deliveries', DeliveryController.index);
 routes.put('/deliveries/:id', DeliveryController.update);
+routes.delete('/deliveries/:id', DeliveryController.delete);
 routes.put('/deliveries/:id/:operation', DeliveryController.update);
 
 // Delivery Problems
@@ -71,9 +72,6 @@ routes.post('/delivery/:id/problems', DeliveryProblemsController.store);
 routes.get('/deliveries/problems', DeliveryProblemsController.index);
 routes.get('/delivery/:id/problems', DeliveryProblemsController.show);
 
-routes.delete(
-  '/problem/:id/cancel-delivery',
-  DeliveryProblemsController.delete
-);
+routes.put('/problem/:id/cancel-delivery', DeliveryProblemsController.update);
 
 export default routes;

@@ -1,4 +1,4 @@
-import { startOfDay, endOfDay, subHours } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 import { Op } from 'sequelize';
 import Delivery from '../models/Delivery';
 import Deliveryman from '../models/Deliveryman';
@@ -8,7 +8,12 @@ import Recipient from '../models/Recipient';
 
 class DeliveryController {
   async index(req, res) {
+    // const { q, page } = req.query;
     const { q } = req.query;
+    // const limit = 5;
+    // eslint-disable-next-line radix
+    // const pageNumber = parseInt(page);
+    // const offset = pageNumber === 1 ? 0 : pageNumber * 5 - limit;
 
     const deliveries = await Delivery.findAll({
       where: {
@@ -16,10 +21,53 @@ class DeliveryController {
           [Op.iLike]: q ? `%${q}%` : '%%',
         },
       },
+      order: [['id', 'ASC']],
+      include: [
+        {
+          model: Deliveryman,
+          as: 'deliveryman',
+          attributes: ['name'],
+        },
+        {
+          model: Recipient,
+          as: 'recipient',
+        },
+      ],
+      // offset,
+      // limit,
     });
 
     res.json(deliveries);
   }
+
+  // async index(req, res) {
+  //   const { q, page } = req.query;
+  //   console.log('page:', page);
+  //   let offs = 0;
+  //   const limit = 5;
+  //   // eslint-disable-next-line radix
+  //   const pageNumber = parseInt(page);
+
+  //   if (pageNumber === 1) {
+  //     offs = 0;
+  //   } else {
+  //     offs = pageNumber * 5 - limit;
+  //   }
+
+  //   const deliveries = await Delivery.findAll({
+  //     where: {
+  //       product: {
+  //         [Op.iLike]: q ? `%${q}%` : '%%',
+  //       },
+  //     },
+  //     order: [['id', 'ASC']],
+  //     attributes: ['status', 'id', 'product'],
+  //     limit,
+  //     offset: offs,
+  //   });
+
+  //   res.json(deliveries);
+  // }
 
   async store(req, res) {
     const { id } = await Delivery.create(req.body);
@@ -72,6 +120,17 @@ class DeliveryController {
         canceled_at: null,
         end_date: null,
       },
+      include: [
+        {
+          model: Deliveryman,
+          as: 'deliveryman',
+          attributes: ['name'],
+        },
+        {
+          model: Recipient,
+          as: 'recipient',
+        },
+      ],
     });
 
     if (!delivery) {
@@ -148,6 +207,37 @@ class DeliveryController {
     }
 
     await delivery.update(data);
+
+    if (operation === 'cancel') {
+      Mail.sendMail({
+        // to: `${appointment.provider.name} <${appointment.provider.email}>`,
+        to: 'and.gmartins@gmail.com',
+        subject: 'Entrega Cancelada',
+        template: 'delivery_cancel',
+        context: {
+          deliveryman: delivery.deliveryman.name,
+          recipient: delivery.recipient.name,
+          product: delivery.product,
+          address: `${delivery.recipient.street}, ${delivery.recipient.number}`,
+          complement: delivery.recipient.complement,
+          state: delivery.recipient.state,
+          city: delivery.recipient.city,
+          zipcode: delivery.recipient.zip_code,
+        },
+      });
+    }
+
+    return res.json('ok');
+  }
+
+  async delete(req, res) {
+    const { id } = req.params;
+
+    await Delivery.destroy({
+      where: {
+        id,
+      },
+    });
 
     return res.json('ok');
   }

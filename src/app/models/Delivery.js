@@ -11,6 +11,20 @@ class Delivery extends Model {
         canceled_at: Sequelize.DATE,
         start_date: Sequelize.DATE,
         end_date: Sequelize.DATE,
+        status: {
+          type: Sequelize.VIRTUAL,
+          get() {
+            let st = 'PENDENTE';
+            if (this.canceled_at !== null) {
+              st = 'CANCELADA';
+            } else if (this.start_date !== null && this.end_date === null) {
+              st = 'RETIRADA';
+            } else if (this.start_date !== null && this.end_date !== null) {
+              st = 'ENTREGUE';
+            }
+            return st;
+          },
+        },
       },
       {
         sequelize,

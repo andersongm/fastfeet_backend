@@ -12,6 +12,7 @@ class RecipientController {
           [Op.iLike]: q ? `%${q}%` : '%%',
         },
       },
+      // attributes: ['']
     });
 
     res.json(recipients);
@@ -23,7 +24,7 @@ class RecipientController {
         name: Yup.string().required(),
         street: Yup.string().required(),
         number: Yup.number().required(),
-        complement: Yup.string().required(),
+        complement: Yup.string(),
         state: Yup.string().required(),
         city: Yup.string().required(),
         zip_code: Yup.string().required(),

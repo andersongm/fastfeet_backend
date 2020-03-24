@@ -1,6 +1,7 @@
 import { Op } from 'sequelize';
 import Deliveryman from '../models/Deliveryman';
 import Delivery from '../models/Delivery';
+import File from '../models/File';
 
 class DeliverymanController {
   async index(req, res) {
@@ -12,6 +13,13 @@ class DeliverymanController {
           [Op.iLike]: q ? `%${q}%` : '%%',
         },
       },
+      include: [
+        {
+          model: File,
+          as: 'avatar',
+          attributes: ['type', 'path', 'url'],
+        },
+      ],
     });
 
     res.json(deliverymans);
@@ -63,52 +71,13 @@ class DeliverymanController {
   async delete(req, res) {
     try {
       const { id } = req.params;
-
       const deliveryman = await Deliveryman.findByPk(id);
-
       await deliveryman.destroy();
-
       return res.json('ok');
     } catch (error) {
       return res.status(400).json({ error: error.message });
     }
   }
-
-  /* async update(req, res) {
-    const { id } = req.params;
-    const sysdate = new Date();
-    const { delivery_id, ...restUpdate } = req.body;
-
-    // console.log(startOfDay(sysdate));
-    // console.log(endOfDay(sysdate));
-
-    // Checar quantidade de Entregas
-    const contDelivery = await Delivery.count({
-      where: {
-        deliveryman_id: id,
-        canceled_at: null,
-        start_date: {
-          [Op.between]: [startOfDay(sysdate), endOfDay(sysdate)],
-        },
-      },
-    });
-
-    if (contDelivery > 4) {
-      return res
-        .status(400)
-        .json({ error: 'Limit deliveries was achieved for you today' });
-    }
-
-    const delivery = await Delivery.findByPk(delivery_id);
-
-    if (!delivery) {
-      return res.status(400).json({ error: 'Delivery was not found' });
-    }
-
-    await delivery.update(restUpdate);
-
-    return res.json('ok');
-  } */
 }
 
 export default new DeliverymanController();

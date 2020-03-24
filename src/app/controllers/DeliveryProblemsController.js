@@ -77,7 +77,7 @@ class DeliveryProblemsController {
     }
   }
 
-  async delete(req, res) {
+  async update(req, res) {
     const { id } = req.params;
 
     try {
@@ -85,10 +85,16 @@ class DeliveryProblemsController {
         where: {
           id,
         },
+        include: [
+          {
+            model: Delivery,
+            as: 'deliveries',
+          },
+        ],
       });
 
       if (!problem) {
-        return res.status(400).json({ error: 'Problem not found!' });
+        return res.json({ error: 'Problem not found for delivery' });
       }
 
       const { delivery_id } = problem;
@@ -103,9 +109,7 @@ class DeliveryProblemsController {
       });
 
       if (delivery.canceled_at !== null) {
-        return res
-          .status(400)
-          .json({ error: 'Delivery already was canceled!' });
+        return res.json({ error: 'Delivery already was canceled!' });
       }
 
       const { deliveryman } = delivery;
