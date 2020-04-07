@@ -9,16 +9,16 @@ import Recipient from '../models/Recipient';
 class DeliveryController {
   async index(req, res) {
     // const { q, page } = req.query;
-    const { q } = req.query;
-    // const limit = 5;
+    const { product, page } = req.query;
+    const limit = page ? 5 : null;
     // eslint-disable-next-line radix
-    // const pageNumber = parseInt(page);
-    // const offset = pageNumber === 1 ? 0 : pageNumber * 5 - limit;
+    const pageNumber = parseInt(page) || 1;
+    const offset = pageNumber === 1 ? 0 : pageNumber * 5 - limit;
 
-    const deliveries = await Delivery.findAll({
+    const deliveries = await Delivery.findAndCountAll({
       where: {
         product: {
-          [Op.iLike]: q ? `%${q}%` : '%%',
+          [Op.iLike]: product ? `%${product}%` : '%%',
         },
       },
       order: [['id', 'ASC']],
@@ -26,48 +26,55 @@ class DeliveryController {
         {
           model: Deliveryman,
           as: 'deliveryman',
-          attributes: ['name'],
+          attributes: ['name', 'avatar_id'],
+          include: [
+            {
+              model: File,
+              as: 'avatar',
+              attributes: ['url', 'type', 'path'],
+            },
+          ],
         },
         {
           model: Recipient,
           as: 'recipient',
         },
       ],
-      // offset,
-      // limit,
+      offset,
+      limit,
     });
 
     res.json(deliveries);
   }
 
-  // async index(req, res) {
-  //   const { q, page } = req.query;
-  //   console.log('page:', page);
-  //   let offs = 0;
-  //   const limit = 5;
-  //   // eslint-disable-next-line radix
-  //   const pageNumber = parseInt(page);
+  async show(req, res) {
+    const { id } = req.params;
+    // eslint-disable-next-line radix
 
-  //   if (pageNumber === 1) {
-  //     offs = 0;
-  //   } else {
-  //     offs = pageNumber * 5 - limit;
-  //   }
+    const delivery = await Delivery.findByPk(id, {
+      order: [['id', 'ASC']],
+      include: [
+        {
+          model: Deliveryman,
+          as: 'deliveryman',
+          attributes: ['name', 'avatar_id'],
+          include: [
+            {
+              model: File,
+              as: 'avatar',
+              attributes: ['url', 'type', 'path'],
+            },
+          ],
+        },
+        {
+          model: Recipient,
+          as: 'recipient',
+        },
+      ],
+    });
 
-  //   const deliveries = await Delivery.findAll({
-  //     where: {
-  //       product: {
-  //         [Op.iLike]: q ? `%${q}%` : '%%',
-  //       },
-  //     },
-  //     order: [['id', 'ASC']],
-  //     attributes: ['status', 'id', 'product'],
-  //     limit,
-  //     offset: offs,
-  //   });
-
-  //   res.json(deliveries);
-  // }
+    res.json(delivery);
+  }
 
   async store(req, res) {
     const { id } = await Delivery.create(req.body);
@@ -142,10 +149,10 @@ class DeliveryController {
     if (operation === 'start') {
       // Checar horário de Trabalho do Entregador
       const currentHour = new Date().getHours();
-      const workTime = currentHour > 8 && currentHour <= 18;
+      const workTime = currentHour > 8 && currentHour <= 23;
 
       if (!workTime) {
-        return res.status(400).json({
+        return res.json({
           error: 'You can not get a delivery out of business time!',
         });
       }

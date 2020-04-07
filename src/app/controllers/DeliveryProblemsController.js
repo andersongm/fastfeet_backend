@@ -5,8 +5,14 @@ import Deliveryman from '../models/Deliveryman';
 
 class DeliveryProblemsController {
   async index(req, res) {
+    const { page } = req.query;
+    const limit = page ? 5 : null;
+    // eslint-disable-next-line radix
+    const pageNumber = parseInt(page) || 1;
+    const offset = pageNumber === 1 ? 0 : pageNumber * 5 - limit;
+
     try {
-      const problems = await DeliveryProblems.findAll({
+      const problems = await DeliveryProblems.findAndCountAll({
         include: [
           {
             model: Delivery,
@@ -14,6 +20,9 @@ class DeliveryProblemsController {
             attributes: ['product'],
           },
         ],
+        order: [['id', 'ASC']],
+        limit,
+        offset,
       });
 
       if (!problems) {
@@ -52,7 +61,7 @@ class DeliveryProblemsController {
     const { id } = req.params;
 
     try {
-      const problems = await DeliveryProblems.findOne({
+      const problems = await DeliveryProblems.findAll({
         where: {
           delivery_id: id,
         },

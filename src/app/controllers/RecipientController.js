@@ -4,15 +4,21 @@ import Recipient from '../models/Recipient';
 
 class RecipientController {
   async index(req, res) {
-    const { q } = req.query;
+    const { name, page } = req.query;
+    const limit = 5;
+    // eslint-disable-next-line radix
+    const pageNumber = parseInt(page) || 1;
+    const offset = pageNumber === 1 ? 0 : pageNumber * 5 - limit;
 
-    const recipients = await Recipient.findAll({
+    const recipients = await Recipient.findAndCountAll({
       where: {
         name: {
-          [Op.iLike]: q ? `%${q}%` : '%%',
+          [Op.iLike]: name ? `%${name}%` : '%%',
         },
       },
-      // attributes: ['']
+      order: [['name', 'ASC']],
+      limit,
+      offset,
     });
 
     res.json(recipients);

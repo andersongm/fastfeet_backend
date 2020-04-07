@@ -2,15 +2,20 @@ import { Op } from 'sequelize';
 import Deliveryman from '../models/Deliveryman';
 import Delivery from '../models/Delivery';
 import File from '../models/File';
+import Recipient from '../models/Recipient';
 
 class DeliverymanController {
   async index(req, res) {
-    const { q } = req.query;
+    const { name, page } = req.query;
+    const limit = page ? 5 : null;
+    // eslint-disable-next-line radix
+    const pageNumber = parseInt(page) || 1;
+    const offset = pageNumber === 1 ? 0 : pageNumber * 5 - limit;
 
-    const deliverymans = await Deliveryman.findAll({
+    const deliverymans = await Deliveryman.findAndCountAll({
       where: {
         name: {
-          [Op.iLike]: q ? `%${q}%` : '%%',
+          [Op.iLike]: name ? `%${name}%` : '%%',
         },
       },
       include: [
@@ -20,6 +25,9 @@ class DeliverymanController {
           attributes: ['type', 'path', 'url'],
         },
       ],
+      order: [['name', 'ASC']],
+      limit,
+      offset,
     });
 
     res.json(deliverymans);
@@ -35,13 +43,19 @@ class DeliverymanController {
     const deliveries = await Delivery.findAll({
       where: {
         deliveryman_id: id,
-        canceled_at: null,
+        canceled_at: {
+          [Op.is]: null,
+        },
       },
       include: [
         {
           model: Deliveryman,
           as: 'deliveryman',
-          attributes: ['name', 'email'],
+          attributes: ['name', 'email', 'createdAt'],
+        },
+        {
+          model: Recipient,
+          as: 'recipient',
         },
       ],
     });

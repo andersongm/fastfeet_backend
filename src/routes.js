@@ -39,13 +39,22 @@ const uploadSign = multer({ storage: multerConfig.storageSignatures });
 // });
 
 routes.post('/sessions', SessionController.store);
+routes.post('/deliverymans/sessions', SessionController.mobileStore);
 routes.post('/users', UserController.store);
 routes.post('/files', upload.single('file'), FileController.store);
 routes.post('/avatarfiles', uploadAvatar.single('file'), FileController.store);
 routes.post('/signaturefiles', uploadSign.single('file'), FileController.store);
 // upload.single('file')
 
-// routes.use(authMiddleware);
+routes.get('/deliverymans/:id/deliveries', DeliverymanController.show);
+
+// Delivery Problem
+routes.post('/delivery/:id/problems', DeliveryProblemsController.store);
+routes.get('/deliveries/problems', DeliveryProblemsController.index);
+routes.get('/delivery/:id/problems', DeliveryProblemsController.show);
+routes.put('/deliveries/:id/:operation', DeliveryController.update);
+
+routes.use(authMiddleware);
 
 // Recipient Routes
 routes.post('/recipients', RecipientController.store);
@@ -55,7 +64,6 @@ routes.put('/recipients/:id', RecipientController.update);
 // Deliveryman Routes
 routes.post('/deliverymans', DeliverymanController.store);
 routes.get('/deliverymans', DeliverymanController.index);
-routes.get('/deliverymans/:id/deliveries', DeliverymanController.show);
 routes.put('/deliverymans/:id', DeliverymanController.update);
 routes.delete('/deliverymans/:id', DeliverymanController.delete);
 // routes.put('/deliverymans/:id/deliveries', DeliverymanController.update);
@@ -64,13 +72,10 @@ routes.delete('/deliverymans/:id', DeliverymanController.delete);
 routes.post('/deliveries', DeliveryController.store);
 routes.get('/deliveries', DeliveryController.index);
 routes.put('/deliveries/:id', DeliveryController.update);
+routes.get('/deliveries/:id', DeliveryController.show);
 routes.delete('/deliveries/:id', DeliveryController.delete);
-routes.put('/deliveries/:id/:operation', DeliveryController.update);
 
 // Delivery Problems
-routes.post('/delivery/:id/problems', DeliveryProblemsController.store);
-routes.get('/deliveries/problems', DeliveryProblemsController.index);
-routes.get('/delivery/:id/problems', DeliveryProblemsController.show);
 
 routes.put('/problem/:id/cancel-delivery', DeliveryProblemsController.update);
 

@@ -1,6 +1,8 @@
 import jwt from 'jsonwebtoken';
 import * as Yup from 'yup';
 import User from '../models/User';
+import DeliveryMan from '../models/Deliveryman';
+import File from '../models/File';
 import authConfig from '../../config/auth';
 
 class SessionController {
@@ -39,6 +41,56 @@ class SessionController {
       token: jwt.sign({ id }, authConfig.secret, {
         expiresIn: authConfig.expiresIn,
       }),
+    });
+  }
+
+  async mobileStore(req, res) {
+    const { id } = req.body;
+
+    // const deliveryMan = await DeliveryMan.findByPk(id, {
+    //   include: [
+    //     {
+    //       model: File,
+    //       as: 'avatar',
+    //       attributes: ['type', 'path', 'url'],
+    //     },
+    //   ],
+    // });
+    const deliveryMan = await DeliveryMan.findOne({
+      where: {
+        id,
+      },
+      // attributes: ['name', 'email', 'createdAt'],
+      include: [
+        {
+          model: File,
+          as: 'avatar',
+          attributes: ['url', 'type', 'path'],
+        },
+      ],
+    });
+
+    // console.log(deliveryMan);
+
+    if (!deliveryMan) {
+      return res.status(401).json({ error: 'Deliveryman not found' });
+    }
+
+    const { name, email, createdAt } = deliveryMan;
+
+    let url = '';
+    if (deliveryMan.avatar) {
+      url = deliveryMan.avatar.url;
+    }
+
+    console.log('URL:', url);
+
+    return res.json({
+      id,
+      name,
+      email,
+      createdAt,
+      url,
     });
   }
 }
