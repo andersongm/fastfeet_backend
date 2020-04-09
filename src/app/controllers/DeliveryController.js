@@ -8,9 +8,9 @@ import Recipient from '../models/Recipient';
 
 class DeliveryController {
   async index(req, res) {
-    // const { q, page } = req.query;
     const { product, page } = req.query;
     const limit = page ? 5 : null;
+
     // eslint-disable-next-line radix
     const pageNumber = parseInt(page) || 1;
     const offset = pageNumber === 1 ? 0 : pageNumber * 5 - limit;
@@ -151,11 +151,11 @@ class DeliveryController {
       const currentHour = new Date().getHours();
       const workTime = currentHour > 8 && currentHour <= 23;
 
-      if (!workTime) {
-        return res.json({
-          error: 'You can not get a delivery out of business time!',
-        });
-      }
+      // if (!workTime) {
+      //   return res.json({
+      //     error: 'You can not get a delivery out of business time!',
+      //   });
+      // }
 
       // Checar quantidade de Entregas
       const contDelivery = await Delivery.count({

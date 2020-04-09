@@ -12,36 +12,14 @@ import DeliveryController from './app/controllers/DeliveryController';
 import DeliveryProblemsController from './app/controllers/DeliveryProblemsController';
 
 const routes = new Router();
-const upload = multer(multerConfig);
+// const upload = multer(multerConfig);
 const uploadAvatar = multer({ storage: multerConfig.storageAvatar });
 const uploadSign = multer({ storage: multerConfig.storageSignatures });
-
-// routes.get('/teste', (req, res) => {
-//   const date = new Date().getTime();
-//   console.log(date);
-//   console.log(startOfDay(date));
-//   console.log(addHours(startOfDay(date), 5));
-//   console.log(endOfDay(date));
-//   console.log(subHours(endOfDay(date), 9));
-
-//   const currentHour = subHours(new Date(), 2).getHours();
-
-//   console.log('currentHour:', currentHour);
-
-//   const ok = currentHour > 8 && currentHour <= 18 ? 'ok' : 'nok';
-
-//   // const retorno = format(date, 'dd/MM/yyyy HH:mm:ss');
-//   const retorno = format(date, 'dd/MM/yyyy').concat(' 08:00:00');
-
-//   // console.log(startOfDay(date));
-
-//   return res.json(ok);
-// });
 
 routes.post('/sessions', SessionController.store);
 routes.post('/deliverymans/sessions', SessionController.mobileStore);
 routes.post('/users', UserController.store);
-routes.post('/files', upload.single('file'), FileController.store);
+// routes.post('/files', upload.single('file'), FileController.store);
 routes.post('/avatarfiles', uploadAvatar.single('file'), FileController.store);
 routes.post('/signaturefiles', uploadSign.single('file'), FileController.store);
 // upload.single('file')

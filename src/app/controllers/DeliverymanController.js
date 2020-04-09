@@ -35,18 +35,60 @@ class DeliverymanController {
 
   async show(req, res) {
     const { id } = req.params;
+    const { page, status = null, id_delivery = null } = req.query;
+    let limit = page ? 5 : null;
+    // eslint-disable-next-line radix
+    const pageNumber = parseInt(page) || 1;
+    let offset = pageNumber === 1 ? 0 : pageNumber * 5 - limit;
+
+    console.log('PAGE =======> ', page);
 
     if (!id) {
       return res.status(401).json({ error: 'Deliveryman was not provided' });
     }
 
-    const deliveries = await Delivery.findAll({
-      where: {
-        deliveryman_id: id,
-        canceled_at: {
-          [Op.is]: null,
-        },
+    console.log(status);
+
+    let where = {
+      deliveryman_id: id,
+      canceled_at: {
+        [Op.is]: null,
       },
+    };
+
+    if (status === 'entregue') {
+      where = {
+        ...where,
+        start_date: {
+          [Op.ne]: null,
+        },
+        end_date: {
+          [Op.ne]: null,
+        },
+      };
+      limit = null;
+      offset = null;
+    } else if (status === 'retirada') {
+      where = {
+        ...where,
+        start_date: {
+          [Op.ne]: null,
+        },
+        end_date: null,
+      };
+    }
+
+    if (id_delivery) {
+      where = {
+        ...where,
+        id: id_delivery,
+      };
+      limit = null;
+      offset = null;
+    }
+
+    const deliveries = await Delivery.findAndCountAll({
+      where,
       include: [
         {
           model: Deliveryman,
@@ -58,6 +100,9 @@ class DeliverymanController {
           as: 'recipient',
         },
       ],
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
     });
 
     return res.json(deliveries);

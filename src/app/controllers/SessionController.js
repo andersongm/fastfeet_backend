@@ -83,8 +83,6 @@ class SessionController {
       url = deliveryMan.avatar.url;
     }
 
-    console.log('URL:', url);
-
     return res.json({
       id,
       name,
