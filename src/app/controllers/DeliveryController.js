@@ -151,11 +151,11 @@ class DeliveryController {
       const currentHour = new Date().getHours();
       const workTime = currentHour > 8 && currentHour <= 23;
 
-      // if (!workTime) {
-      //   return res.json({
-      //     error: 'You can not get a delivery out of business time!',
-      //   });
-      // }
+      if (!workTime) {
+        return res.json({
+          error: 'You can not get a delivery out of business time!',
+        });
+      }
 
       // Checar quantidade de Entregas
       const contDelivery = await Delivery.count({
