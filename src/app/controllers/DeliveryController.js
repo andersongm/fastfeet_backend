@@ -3,7 +3,6 @@ import { Op } from 'sequelize';
 import Delivery from '../models/Delivery';
 import Deliveryman from '../models/Deliveryman';
 import File from '../models/File';
-// import Mail from '../lib/Mail';
 import Recipient from '../models/Recipient';
 import Queue from '../lib/Queue';
 import DeliveryRegiteredMail from '../jobs/DeliveryRegisteredMail';

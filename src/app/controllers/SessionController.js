@@ -47,20 +47,10 @@ class SessionController {
   async mobileStore(req, res) {
     const { id } = req.body;
 
-    // const deliveryMan = await DeliveryMan.findByPk(id, {
-    //   include: [
-    //     {
-    //       model: File,
-    //       as: 'avatar',
-    //       attributes: ['type', 'path', 'url'],
-    //     },
-    //   ],
-    // });
     const deliveryMan = await DeliveryMan.findOne({
       where: {
         id,
       },
-      // attributes: ['name', 'email', 'createdAt'],
       include: [
         {
           model: File,
@@ -69,8 +59,6 @@ class SessionController {
         },
       ],
     });
-
-    // console.log(deliveryMan);
 
     if (!deliveryMan) {
       return res.status(401).json({ error: 'Deliveryman not found' });
