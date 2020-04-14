@@ -19,18 +19,17 @@ const uploadSign = multer({ storage: multerConfig.storageSignatures });
 routes.post('/sessions', SessionController.store);
 routes.post('/deliverymans/sessions', SessionController.mobileStore);
 routes.post('/users', UserController.store);
-// routes.post('/files', upload.single('file'), FileController.store);
 routes.post('/avatarfiles', uploadAvatar.single('file'), FileController.store);
 routes.post('/signaturefiles', uploadSign.single('file'), FileController.store);
-// upload.single('file')
 
 routes.get('/deliverymans/:id/deliveries', DeliverymanController.show);
+
+routes.put('/deliveries/:id/:operation', DeliveryController.update);
 
 // Delivery Problem
 routes.post('/delivery/:id/problems', DeliveryProblemsController.store);
 routes.get('/deliveries/problems', DeliveryProblemsController.index);
 routes.get('/delivery/:id/problems', DeliveryProblemsController.show);
-routes.put('/deliveries/:id/:operation', DeliveryController.update);
 
 routes.use(authMiddleware);
 
@@ -38,6 +37,7 @@ routes.use(authMiddleware);
 routes.post('/recipients', RecipientController.store);
 routes.get('/recipients', RecipientController.index);
 routes.put('/recipients/:id', RecipientController.update);
+routes.delete('/recipients/:id', RecipientController.delete);
 
 // Deliveryman Routes
 routes.post('/deliverymans', DeliverymanController.store);

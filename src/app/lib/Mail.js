@@ -7,7 +7,6 @@ import mailConfig from '../../config/mail';
 class Mail {
   constructor() {
     const { host, port, secure, auth } = mailConfig;
-
     this.transporter = nodemailer.createTransport({
       host,
       port,
@@ -36,12 +35,24 @@ class Mail {
     );
   }
 
+  // sendMail(message) {
+  //   console.log('Mail Sent', message);
+  //   return this.transporter.sendMail({
+  //     ...mailConfig.default,
+  //     ...message,
+  //   });
+  // }
+
   sendMail(message) {
-    console.log('Mail Sent');
-    return this.transporter.sendMail({
-      ...mailConfig.default,
-      ...message,
-    });
+    try {
+      const response = this.transporter.sendMail({
+        ...mailConfig.default,
+        ...message,
+      });
+      return response;
+    } catch (error) {
+      return `Erro ao Enviar Email:${error}`;
+    }
   }
 }
 

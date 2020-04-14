@@ -49,12 +49,24 @@ class RecipientController {
 
   async update(req, res) {
     const { id } = req.params;
-
+    console.log(req.body);
     const recipient = await Recipient.findByPk(id);
 
     await recipient.update(req.body);
 
     return res.json(recipient);
+  }
+
+  async delete(req, res) {
+    const { id } = req.params;
+
+    await Recipient.destroy({
+      where: {
+        id,
+      },
+    });
+
+    return res.json('ok');
   }
 }
 

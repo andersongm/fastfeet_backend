@@ -1,7 +1,9 @@
 import DeliveryProblems from '../models/DeliveryProblems';
 import Delivery from '../models/Delivery';
-import Mail from '../lib/Mail';
 import Deliveryman from '../models/Deliveryman';
+import Recipient from '../models/Recipient';
+import Queue from '../lib/Queue';
+import DeliveryCancelMail from '../jobs/DeliveryCancelMail';
 
 class DeliveryProblemsController {
   async index(req, res) {
@@ -114,6 +116,10 @@ class DeliveryProblemsController {
             model: Deliveryman,
             as: 'deliveryman',
           },
+          {
+            model: Recipient,
+            as: 'recipient',
+          },
         ],
       });
 
@@ -121,24 +127,12 @@ class DeliveryProblemsController {
         return res.json({ error: 'Delivery already was canceled!' });
       }
 
-      const { deliveryman } = delivery;
-
       await delivery.update({
         canceled_at: new Date(),
       });
 
-      Mail.sendMail({
-        // to: `${appointment.provider.name} <${appointment.provider.email}>`,
-        to: 'and.gmartins@gmail.com',
-        subject: 'Encomenda Cancelada',
-        template: 'delivery',
-        context: {
-          deliveryman,
-          // user: appointment.user.name,
-          // date: format(appointment.date, "'dia 'dd' de 'MMMM', às ' H:mm ' h'", {
-          //   locale: pt,
-          // }),
-        },
+      await Queue.add(DeliveryCancelMail.key, {
+        delivery,
       });
 
       return res.json(delivery);

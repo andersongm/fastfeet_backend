@@ -3,8 +3,10 @@ import { Op } from 'sequelize';
 import Delivery from '../models/Delivery';
 import Deliveryman from '../models/Deliveryman';
 import File from '../models/File';
-import Mail from '../lib/Mail';
+// import Mail from '../lib/Mail';
 import Recipient from '../models/Recipient';
+import Queue from '../lib/Queue';
+import DeliveryRegiteredMail from '../jobs/DeliveryRegisteredMail';
 
 class DeliveryController {
   async index(req, res) {
@@ -39,6 +41,11 @@ class DeliveryController {
           model: Recipient,
           as: 'recipient',
         },
+        {
+          model: File,
+          as: 'signature',
+          attributes: ['url', 'type', 'path'],
+        },
       ],
       offset,
       limit,
@@ -70,6 +77,11 @@ class DeliveryController {
           model: Recipient,
           as: 'recipient',
         },
+        {
+          model: File,
+          as: 'signature',
+          attributes: ['url', 'type', 'path'],
+        },
       ],
     });
 
@@ -77,42 +89,35 @@ class DeliveryController {
   }
 
   async store(req, res) {
-    const { id } = await Delivery.create(req.body);
+    try {
+      const { id } = await Delivery.create(req.body);
 
-    const delivery = await Delivery.findByPk(id, {
-      include: [
-        {
-          model: Deliveryman,
-          as: 'deliveryman',
-          attributes: ['name'],
-        },
-        {
-          model: Recipient,
-          as: 'recipient',
-        },
-      ],
-    });
+      const delivery = await Delivery.findByPk(id, {
+        include: [
+          {
+            model: Deliveryman,
+            as: 'deliveryman',
+            attributes: ['name', 'email'],
+          },
+          {
+            model: Recipient,
+            as: 'recipient',
+          },
+        ],
+      });
 
-    // const { name } = await Deliveryman.findByPk(delivery.deliveryman_id);
+      await Queue.add(DeliveryRegiteredMail.key, {
+        delivery,
+      });
 
-    Mail.sendMail({
-      // to: `${appointment.provider.name} <${appointment.provider.email}>`,
-      to: 'and.gmartins@gmail.com',
-      subject: 'Encomenda Registrada',
-      template: 'delivery',
-      context: {
-        deliveryman: delivery.deliveryman.name,
-        recipient: delivery.recipient.name,
-        product: delivery.product,
-        address: `${delivery.recipient.street}, ${delivery.recipient.number}`,
-        complement: delivery.recipient.complement,
-        state: delivery.recipient.state,
-        city: delivery.recipient.city,
-        zipcode: delivery.recipient.zip_code,
-      },
-    });
-
-    return res.json(delivery);
+      return res.json(delivery);
+    } catch (error) {
+      console.log('Falha ao Registrar Encomenda:', error.message);
+      return res.status(500).json({
+        error:
+          'Falha no Servidor. Entre em contato com o Administrador do Sistema',
+      });
+    }
   }
 
   async update(req, res) {
@@ -131,7 +136,7 @@ class DeliveryController {
         {
           model: Deliveryman,
           as: 'deliveryman',
-          attributes: ['name'],
+          attributes: ['name', 'email'],
         },
         {
           model: Recipient,
@@ -201,10 +206,6 @@ class DeliveryController {
         signature_id,
         end_date: new Date(),
       };
-    } else if (operation === 'cancel') {
-      data = {
-        canceled_at: new Date(),
-      };
     } else {
       data = {
         recipient_id,
@@ -214,25 +215,6 @@ class DeliveryController {
     }
 
     await delivery.update(data);
-
-    if (operation === 'cancel') {
-      Mail.sendMail({
-        // to: `${appointment.provider.name} <${appointment.provider.email}>`,
-        to: 'and.gmartins@gmail.com',
-        subject: 'Entrega Cancelada',
-        template: 'delivery_cancel',
-        context: {
-          deliveryman: delivery.deliveryman.name,
-          recipient: delivery.recipient.name,
-          product: delivery.product,
-          address: `${delivery.recipient.street}, ${delivery.recipient.number}`,
-          complement: delivery.recipient.complement,
-          state: delivery.recipient.state,
-          city: delivery.recipient.city,
-          zipcode: delivery.recipient.zip_code,
-        },
-      });
-    }
 
     return res.json('ok');
   }

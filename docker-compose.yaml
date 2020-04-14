@@ -1,0 +1,51 @@
+version: "3.7"
+
+services:
+  # fastfeet-server:
+  #   container_name: fastfeet-server
+  #   build: '.'
+  #   #entrypoint: ['./init.sh']
+  #   # volumes:
+  #   #   - fastfeet-server-data:/data
+  #   depends_on:
+  #     - fastfeet-db
+  #     - fastfeet-redis
+  #   networks:
+  #     - app-connect
+  #   ports:
+  #     - '3333:3333'
+
+  fastfeet-db:
+    container_name: fastfeet-db
+    image: postgres:11
+    volumes:
+      - fastfeet-db-data:/data
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    networks:
+      - app-connect
+    ports:
+      - '5432:5432'
+
+  fastfeet-redis:
+    container_name: fastfeet-redis
+    image: redis:alpine
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+    volumes:
+      - fastfeet-redis-data:/data
+    networks:
+      - app-connect
+    ports:
+      - "6379:6379"
+
+volumes:
+  fastfeet-db-data:
+  fastfeet-redis-data:
+
+networks:
+  app-connect:
+      driver: bridge

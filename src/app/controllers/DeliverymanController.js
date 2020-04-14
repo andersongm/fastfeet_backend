@@ -41,17 +41,19 @@ class DeliverymanController {
     const pageNumber = parseInt(page) || 1;
     let offset = pageNumber === 1 ? 0 : pageNumber * 5 - limit;
 
-    console.log('PAGE =======> ', page);
-
     if (!id) {
       return res.status(401).json({ error: 'Deliveryman was not provided' });
     }
 
-    console.log(status);
-
     let where = {
       deliveryman_id: id,
       canceled_at: {
+        [Op.is]: null,
+      },
+      start_date: {
+        [Op.is]: null,
+      },
+      end_date: {
         [Op.is]: null,
       },
     };
@@ -109,8 +111,13 @@ class DeliverymanController {
   }
 
   async store(req, res) {
-    const courier = await Deliveryman.create(req.body);
-    return res.json(courier);
+    try {
+      const deliveyrman = await Deliveryman.create(req.body);
+      return res.json(deliveyrman);
+    } catch (error) {
+      console.log(error);
+      return res.status(400).json({ error: error.message });
+    }
   }
 
   async update(req, res) {
