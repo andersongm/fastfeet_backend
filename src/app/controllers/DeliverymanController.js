@@ -50,9 +50,9 @@ class DeliverymanController {
       canceled_at: {
         [Op.is]: null,
       },
-      start_date: {
-        [Op.is]: null,
-      },
+      // start_date: {
+      //   [Op.is]: null,
+      // },
       end_date: {
         [Op.is]: null,
       },
@@ -82,7 +82,6 @@ class DeliverymanController {
 
     if (id_delivery) {
       where = {
-        ...where,
         id: id_delivery,
       };
       limit = null;
